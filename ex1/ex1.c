@@ -1,6 +1,6 @@
 #include <stdio.h>
-long num_steps = 100000;
-double step = 1.0/100000.0;
+long num_steps = 1000000;
+double step = 1.0/1000000.0;
 int main(){
     int i;
     double x, pi, sum = 0.0;
