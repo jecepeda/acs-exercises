@@ -28,9 +28,7 @@ void primeNumbers(int number){
             }
         }
     } // end parallelism
-    for(i = 2; i<=number; i++)
-    {
-        //If number is not 0 then it is prime
+    for(i = 2; i<=number; i++) {
         if (primes[i]!=0){
             // printf("%d\n",primes[i]);
         }
