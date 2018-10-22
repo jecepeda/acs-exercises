@@ -36,7 +36,7 @@ int count_number_spaces(char *string, long stringsize){
     int count = 0;
     #pragma omp parallel
     {
-        #pragma omp for reduction (+:count) schedule (static)
+        #pragma omp for reduction (+:count)
         for (i = 0; i < (int) stringsize; i++){
             if (*(string + i) == ' '){
                 count++;
