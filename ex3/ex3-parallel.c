@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
 
 char* read_file(char *filename, long* filesize);
 int count_number_spaces(char* string, long stringsize);
@@ -33,9 +34,13 @@ char* read_file(char *filename, long *fsize){
 int count_number_spaces(char *string, long stringsize){
     int i = 0;
     int count = 0;
-    for (i = 0; i < (int) stringsize; i++){
-        if (*(string + i) == ' '){
-            count++;
+    #pragma omp parallel
+    {
+        #pragma omp for reduction (+:count) schedule (static)
+        for (i = 0; i < (int) stringsize; i++){
+            if (*(string + i) == ' '){
+                count++;
+            }
         }
     }
     return count;
