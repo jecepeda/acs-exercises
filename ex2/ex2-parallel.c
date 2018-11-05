@@ -3,7 +3,7 @@
 void primeNumbers(int n);
 
 int main(){
-    int n = 10000;
+    int n = 100000;
     primeNumbers(n);
 }
 
@@ -15,13 +15,14 @@ void primeNumbers(int number){
     //populating array with naturals numbers
     for(i = 0; i<=number; i++)
         primes[i] = i;
-    for(i = number; i > 0; i--){
-        #pragma omp parallel
-        {
-            #pragma omp for schedule(static)
+    #pragma omp parallel
+    {
+        #pragma omp for schedule(guided, 2000)
+        for(i = number; i > 0; i--){
             for(j = 2; j < i; j++){
                 if (i % j == 0){
                     primes[i] = 0;
+                    break;
                 }
             }
         }

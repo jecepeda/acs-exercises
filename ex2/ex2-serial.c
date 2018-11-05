@@ -3,7 +3,7 @@
 void primeNumbers(int n);
 
 int main(){
-    int n = 10000;
+    int n = 100000;
     primeNumbers(n);
 }
 
@@ -20,6 +20,7 @@ void primeNumbers(int number){
         for(j = 2; j < i; j++){
             if (i % j == 0){
                 primes[i] = 0;
+                break;
             }
         }
     }
