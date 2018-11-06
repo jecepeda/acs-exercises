@@ -18,7 +18,7 @@ void primeNumbers(int number){
     #pragma omp parallel
     {
         #pragma omp for schedule(guided, 2000)
-        for(i = number; i > 0; i--){
+        for(i = number; i > 0; --i){
             for(j = 2; j < i; j++){
                 if (i % j == 0){
                     primes[i] = 0;

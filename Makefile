@@ -17,17 +17,17 @@ run-perf:
 perf-ex1:
 	sudo perf stat -r 10 ./ex1.out
 	sudo perf stat -r 10 ./ex1-parallel.out
-	sudo perf stat -r 10 ./ex1-mpi.out
+	sudo perf stat -r 10 /home/jcepeda/mpich-install-3.2/bin/mpirun -np 4 -hosts jcepeda ./ex1-mpi.out
 
 perf-ex2:
 	sudo perf stat -r 10 ./ex2-serial.out
 	sudo perf stat -r 10 ./ex2-parallel.out
-	sudo perf stat -r 10 ./ex2-mpi.out
+	sudo perf stat -r 10 /home/jcepeda/mpich-install-3.2/bin/mpirun -np 4 -hosts jcepeda ./ex2-mpi.out
 
 perf-ex3:
 	sudo perf stat -r 10 ./ex3-serial.out
 	sudo perf stat -r 10 ./ex3-parallel.out
-	sudo perf stat -r 10 ./ex3-mpi.out
+	sudo perf stat -r 10 /home/jcepeda/mpich-install-3.2/bin/mpirun -np 4 -hosts jcepeda ./ex3-mpi.out
 
 clean:
 	find . -type f -name "*.out" -exec rm {} \;

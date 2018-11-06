@@ -43,7 +43,6 @@ int count_number_spaces(char *string, long stringsize){
     if (process_rank == 3){
         upper_limit += (int) stringsize % 4;
     }
-    printf("lower limit %d upper %d\n", lower_limit, upper_limit);
     for (i = lower_limit; i < upper_limit; i++){
         if (*(string + i) == ' '){
             count++;
@@ -51,7 +50,7 @@ int count_number_spaces(char *string, long stringsize){
     }
     MPI_Reduce(&count, &total_count, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     if (process_rank == 0){
-        printf("spaces %d\n", total_count);
+        printf("size %ld spaces %d\n", stringsize, total_count);
     }
     MPI_Finalize();
     return total_count;
