@@ -14,7 +14,7 @@ void initializeArray(float* arr, int row, int col);
 int main() {
     // Load the source code containing the kernel
     FILE *fp;
-    char fileName[] = "./ocl1.cl";
+    char fileName[] = "./ocl2.cl";
     char *source_str;
     size_t source_size;
     fp = fopen(fileName, "r");
@@ -48,22 +48,24 @@ int main() {
     // Build Kernel Program
     ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
     // Create OpenCL Kernel
-    #define NUM_KERNELS 1
-    #define MAXMUL 0
+    #define NUM_KERNELS 2
+    #define MAXMULROW 0
+    #define TRANSPOSE 1
     #define ARRSIZE 10
 
     cl_kernel kernel[NUM_KERNELS];
-    kernel[MAXMUL] = clCreateKernel(program, "matrixMul", &ret);
+    kernel[MAXMULROW] = clCreateKernel(program, "matrixMulRow", &ret);
+    kernel[TRANSPOSE] = clCreateKernel(program, "transpose", &ret);
 
     // Init random
     srand((unsigned int)time(NULL));
 
-    // Book main memory for all three matrices
-    int i, j;
     float *A, *B, *C;
+    float *BTrans;
     A = (float *)malloc(ARRSIZE*ARRSIZE*sizeof(float));
     B = (float *)malloc(ARRSIZE*ARRSIZE*sizeof(float));
     C = (float *)malloc(ARRSIZE*ARRSIZE*sizeof(float));
+    BTrans = (float *)malloc(ARRSIZE*ARRSIZE*sizeof(float));
 
     initializeArray(A, ARRSIZE, ARRSIZE);
     initializeArray(B, ARRSIZE, ARRSIZE);
@@ -75,21 +77,31 @@ int main() {
     cl_mem Amobj = NULL;
     cl_mem Bmobj = NULL;
     cl_mem Cmobj = NULL;
+    cl_mem BTransmobj = NULL;
     Amobj = clCreateBuffer(context, CL_MEM_READ_WRITE,
             ARRSIZE*ARRSIZE*sizeof(float), NULL, &ret);
     Bmobj = clCreateBuffer(context, CL_MEM_READ_WRITE,
             ARRSIZE*ARRSIZE*sizeof(float), NULL, &ret);
     Cmobj = clCreateBuffer(context, CL_MEM_READ_WRITE,
             ARRSIZE*ARRSIZE*sizeof(float), NULL, &ret);
+    // Devide buffer object for B transpose
+    BTransmobj = clCreateBuffer(context, CL_MEM_READ_WRITE,
+            ARRSIZE*ARRSIZE*sizeof(float), NULL, &ret);
 
     int wA = ARRSIZE;
     int wB = ARRSIZE;
-    ret = clSetKernelArg(kernel[MAXMUL], 0, sizeof(cl_mem), (void *)&Amobj);
-    ret = clSetKernelArg(kernel[MAXMUL], 1, sizeof(cl_mem), (void *)&Bmobj);
-    ret = clSetKernelArg(kernel[MAXMUL], 2, sizeof(int), (void *)&wA);
-    ret = clSetKernelArg(kernel[MAXMUL], 3, sizeof(int), (void *)&wB);
-    ret = clSetKernelArg(kernel[MAXMUL], 4, sizeof(cl_mem), (void *)&Cmobj);
+    // transpose
+    ret = clSetKernelArg(kernel[TRANSPOSE], 0, sizeof(cl_mem), (void *)&Bmobj);
+    ret = clSetKernelArg(kernel[TRANSPOSE], 1, sizeof(int), (void *)&wB);
+    ret = clSetKernelArg(kernel[TRANSPOSE], 2, sizeof(cl_mem), (void *)&BTransmobj);
+    // MaxMulRow
+    ret = clSetKernelArg(kernel[MAXMULROW], 0, sizeof(cl_mem), (void *)&Amobj);
+    ret = clSetKernelArg(kernel[MAXMULROW], 1, sizeof(cl_mem), (void *)&BTransmobj);
+    ret = clSetKernelArg(kernel[MAXMULROW], 2, sizeof(int), (void *)&wA);
+    ret = clSetKernelArg(kernel[MAXMULROW], 3, sizeof(int), (void *)&wB);
+    ret = clSetKernelArg(kernel[MAXMULROW], 4, sizeof(cl_mem), (void *)&Cmobj);
 
+    // Enqueue A and B
     ret = clEnqueueWriteBuffer(command_queue, Amobj, CL_TRUE, 0,
             ARRSIZE*ARRSIZE*sizeof(float), A, 0, NULL, NULL);
     ret = clEnqueueWriteBuffer(command_queue, Bmobj, CL_TRUE, 0,
@@ -97,22 +109,32 @@ int main() {
     // Execute OpenCL kernel as data parallel
     size_t global_item_size[2] = {ARRSIZE, ARRSIZE};
     size_t local_item_size[2] = {1, 1};
-    ret = clEnqueueNDRangeKernel(command_queue, kernel[MAXMUL], 2, NULL,
+    ret = clEnqueueNDRangeKernel(command_queue, kernel[TRANSPOSE], 2, NULL,
             global_item_size, local_item_size,
             0, NULL, NULL);
-    // Copy back the resulting matrix C from device buffer
+    // Get the transpose of B
+    ret = clEnqueueReadBuffer(command_queue, BTransmobj, CL_TRUE, 0,
+            ARRSIZE*ARRSIZE*sizeof(float), BTrans, 0, NULL, NULL);
+    printArray("BTrans", BTrans, ARRSIZE, ARRSIZE);
+
+    ret = clEnqueueNDRangeKernel(command_queue, kernel[MAXMULROW], 2, NULL,
+            global_item_size, local_item_size,
+            0, NULL, NULL);
     ret = clEnqueueReadBuffer(command_queue, Cmobj, CL_TRUE, 0,
             ARRSIZE*ARRSIZE*sizeof(float), C, 0, NULL, NULL);
-
+    // Display results
     printArray("C", C, ARRSIZE, ARRSIZE);
     // Free device buffers
     ret = clReleaseMemObject(Amobj);
     ret = clReleaseMemObject(Bmobj);
     ret = clReleaseMemObject(Cmobj);
+    ret = clReleaseMemObject(BTransmobj);
 
     // Finalization
     ret = clFlush(command_queue);
     ret = clFinish(command_queue);
+
+    int i;
     for (i=0; i < NUM_KERNELS; i++) {
         ret = clReleaseKernel(kernel[i]);
     }
