@@ -70,8 +70,8 @@ int main() {
     initializeArray(A, ARRSIZE, ARRSIZE);
     initializeArray(B, ARRSIZE, ARRSIZE);
 
-    printArray("A", A, ARRSIZE, ARRSIZE);
-    printArray("B", B, ARRSIZE, ARRSIZE);
+    //printArray("A", A, ARRSIZE, ARRSIZE);
+    //printArray("B", B, ARRSIZE, ARRSIZE);
 
     // Create Device Buffer Objects for all three matrices
     cl_mem Amobj = NULL;
@@ -115,7 +115,7 @@ int main() {
     // Get the transpose of B
     ret = clEnqueueReadBuffer(command_queue, BTransmobj, CL_TRUE, 0,
             ARRSIZE*ARRSIZE*sizeof(float), BTrans, 0, NULL, NULL);
-    printArray("BTrans", BTrans, ARRSIZE, ARRSIZE);
+    //printArray("BTrans", BTrans, ARRSIZE, ARRSIZE);
 
     ret = clEnqueueNDRangeKernel(command_queue, kernel[MAXMULROW], 2, NULL,
             global_item_size, local_item_size,

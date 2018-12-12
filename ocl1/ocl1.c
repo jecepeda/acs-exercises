@@ -47,6 +47,7 @@ int main() {
             &ret);
     // Build Kernel Program
     ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
+    printf("%d\n", (int) ret);
     // Create OpenCL Kernel
     #define NUM_KERNELS 1
     #define MAXMUL 0
